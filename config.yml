@@ -1,2 +1,7 @@
 assistant:
   language: "de"
+  inputdeviceindex: 1
+  wakewords:
+#    - "hey alfred"
+    - "bumblebee"
+    - "terminator"
