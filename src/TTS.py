@@ -10,6 +10,7 @@ def __speak__( text, voiceId ):
 	engine.say( text )
 	engine.runAndWait( )
 
+dc_language = { "de" : "German", "en" : "English" }
 
 class Voice:
 
@@ -35,6 +36,9 @@ class Voice:
 			self.process.terminate( )
 
 	def get_voice_keys_by_language( self, language= "" ):
+		global dc_language
+		language = dc_language[ language ]
+
 		result = []
 		engine = pyttsx3.init( )
 		voices = engine.getProperty( 'voices' )
