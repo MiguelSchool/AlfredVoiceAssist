@@ -1,6 +1,6 @@
 assistant:
   language: "de"
-  inputdeviceindex: 1
+  inputdeviceindex: 0
   wakewords:
 #    - "hey alfred"
     - "bumblebee"

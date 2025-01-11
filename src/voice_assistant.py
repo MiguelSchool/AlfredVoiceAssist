@@ -1,11 +1,15 @@
 import struct
 import sys
 import pyaudio as py_audio
+import vosk
 
 from loguru import logger as log
 from src.TTS import Voice
 from src.config_manager import ConfigManager
 from src.wake_words import WakeWords
+from vosk import Model, SpkModel, KaldiRecognizer
+import json
+import text2numde
 
 
 class VoiceAssistant:
@@ -45,6 +49,17 @@ class VoiceAssistant:
 			self.tts.set_voice( voices[ 0 ] )
 			log.info( voices[ 0 ] )
 
+		log.info( "Voice assistant initialize..." )
+
+		peak2text_model = Model( "./vosk-model-de-0.21" )
+		speaker_model = SpkModel( "./vosk-model-spk-0.4" )
+		self.recognizer = vosk.KaldiRecognizer( peak2text_model, speaker_model, 16000 )
+
+		self.is_listening = False
+		log.debug( "Voice assistant initialized" )
+
+
+
 	def print_device_channels( self ):
 		for i in range( self.wake_words.py_audio.get_device_count( ) ):
 			value = self.wake_words.py_audio.get_device_info_by_index( i )
@@ -58,9 +73,13 @@ class VoiceAssistant:
 				pcm_unpacked = struct.unpack_from( "h" * self.wake_words.porcupine.frame_length, pcm )
 				keyword_index = self.wake_words.porcupine.process( pcm_unpacked )
 				if keyword_index >= 0:
-					message = "Hallo ich heiße Alfred und konnte deinen Befehl erkennen"
-					self.talk_to_user( message )
-					break
+					log.info( "Wake word detected" )
+					self.is_listening = True
+				if self.is_listening and self.recognizer.AcceptWaveform( pcm ):
+					result = json.loads( self.recognizer.Result( ) )
+					sentence = result[ "text" ]
+					log.debug( "Recognized text: {}", sentence )
+					self.is_listening = False
 
 		except KeyboardInterrupt:
 			log.info( "Stopping Voice Assistant" )
